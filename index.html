@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="it-IT">
+<head>
+	<title>Genera Qr Code Anagrafico - Agenzia delle Entrate</title>
+	<meta charset="utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<link
+			rel="stylesheet"
+			href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+			integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS"
+			crossorigin="anonymous"
+	/>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/css/select2.min.css"/>
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css"
+	      integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
+
+	<style>
+		body {
+			font-size: 16px;
+		}
+		.wrapper{
+			margin-bottom: 150px;
+		}
+		.jumbotron {
+			padding-top: 15px;
+			padding-bottom: 15px;
+		}
+	</style>
+
+</head>
+<body>
+<div class="wrapper">
+	<div class="container">
+		<h1>Genera Qr Code Anagrafico Agenzia delle Entrate</h1>
+
+		<div class="jumbotron">
+			<h2>Anagrafica</h2>
+			<div class="form-group row">
+				<label class="col-md-2 col-form-label">Nazione</label>
+				<div class="col-md-10">
+					<input class="form-control" type="text" id="anag.naz" value="IT"/>
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-md-2 col-form-label">Codice Fiscale</label>
+				<div class="col-md-10">
+					<input class="form-control" type="text" id="anag.cf"/>
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-md-2 col-form-label">Partita IVA</label>
+				<div class="col-md-10">
+					<input class="form-control" type="text" id="anag.piva"/>
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-md-2 col-form-label">Denominazione</label>
+				<div class="col-md-10">
+					<input class="form-control" type="text" id="anag.denom"/>
+				</div>
+			</div>
+			<hr>
+			<h2>Domicilio Fiscale</h2>
+			<div class="form-group row">
+				<label class="col-md-2 col-form-label">Comune</label>
+				<div class="col-md-10">
+					<select
+							type="text"
+							id="comuni"
+							onchange="selectComune()"
+					>
+						<option></option>
+					</select>
+					<input class="form-control" style="display: none" type="text" id="domFisc.com"/>
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-md-2 col-form-label">Provincia</label>
+				<div class="col-md-10">
+					<input class="form-control" type="text" id="domFisc.prov"/>
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-md-2 col-form-label">CAP</label>
+				<div class="col-md-10">
+					<input class="form-control" type="text" id="domFisc.cap"/>
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-md-2 col-form-label">Nazione</label>
+				<div class="col-md-10">
+					<input
+							class="form-control"
+							type="text"
+							id="domFisc.naz"
+							value="IT"
+					/>
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-md-2 col-form-label">Indirizzo</label>
+				<div class="col-md-10">
+					<input class="form-control" type="text" id="domFisc.ind"/>
+				</div>
+			</div>
+			<hr>
+			<h2>SDI</h2>
+			<div class="form-group row">
+				<label class="col-md-2 col-form-label">PEC</label>
+				<div class="col-md-10">
+					<input class="form-control" type="text" id="SDI.pec"/>
+				</div>
+			</div>
+			<div class="form-group row">
+				<label class="col-md-2 col-form-label">Codice</label>
+				<div class="col-md-10">
+					<input class="form-control" type="text" id="SDI.cod"/>
+				</div>
+			</div>
+			<hr class="mb-3">
+			<div id="QRCode" class="text-center m-5"></div>
+			<div class="form-group d-flex justify-content-center">
+				<button class="btn btn-primary mr-2" onclick="generate()">
+					<i class="fas fa-qrcode"></i> Genera
+				</button>
+				<button class="btn btn-primary" onclick="generateDownload()">
+					<i class="fas fa-download"></i>
+					Genera e Scarica
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.5/js/select2.min.js"></script>
+<script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.1/qrcode.min.js"></script>
+
+<script>
+	window.addEventListener('load', function () {
+		var xobj = new XMLHttpRequest()
+		xobj.overrideMimeType('application/json')
+		xobj.open('GET', 'comuni.json', true) // Replace 'my_data' with the path to your file
+		xobj.onreadystatechange = function () {
+			if (xobj.readyState == 4 && xobj.status == '200') {
+				$('#comuni').select2({
+					allowClear: true,
+					placeholder: 'Seleziona Comune',
+					data: JSON.parse(xobj.responseText)
+				})
+			} else if (xobj.readyState == 4 && xobj.status != '200') {
+				document.getElementById('domFisc.com').style.display = 'block'
+				document.getElementById('comuni').style.display = 'none'
+			}
+		}
+		xobj.send(null)
+
+	})
+
+	var companyData = {
+		anag: {
+			naz: 'IT',
+			cf: '',
+			piva: '',
+			denom: '',
+			domFisc: {
+				prov: '',
+				cap: '',
+				com: '',
+				ind: '',
+				naz: 'IT'
+			}
+		},
+		dtGenQr: '',
+		SDI: {
+			pec: '',
+			cod: ''
+		}
+	}
+
+	function selectComune() {
+		var comune = $('#comuni').select2('data')[0]
+		document.getElementById('domFisc.com').value = comune.text
+		document.getElementById('domFisc.cap').value = comune.cap[0]
+		document.getElementById('domFisc.prov').value = comune.provincia
+	}
+
+	function generateDownload() {
+		generate(function (data) {
+			var a = document.createElement('a')
+			a.href = data.replace(/^data:image\/[^;]+/, 'data:application/octet-stream')
+			a.download = 'QRCode_' + (companyData.anag.piva || '') + '.gif'
+			document.body.appendChild(a)
+			a.click()
+			document.body.removeChild(a)
+		})
+	}
+
+	function generate(cb) {
+		companyData.anag.naz = document.getElementById('anag.naz').value
+		companyData.anag.cf = document.getElementById('anag.cf').value
+		companyData.anag.piva = document.getElementById('anag.piva').value
+		companyData.anag.denom = document.getElementById('anag.denom').value
+
+		companyData.anag.domFisc.prov = document.getElementById(
+			'domFisc.prov'
+		).value
+		companyData.anag.domFisc.cap = document.getElementById(
+			'domFisc.cap'
+		).value
+		companyData.anag.domFisc.com = document.getElementById(
+			'domFisc.com'
+		).value
+		companyData.anag.domFisc.ind = document.getElementById(
+			'domFisc.ind'
+		).value
+		companyData.anag.domFisc.naz = document.getElementById(
+			'domFisc.naz'
+		).value
+
+		companyData.SDI.pec = document.getElementById('SDI.pec').value
+		companyData.SDI.cod = document.getElementById('SDI.cod').value
+
+		companyData.dtGenQr = new Date().toString()
+
+		var typeNumber = 0
+		var errorCorrectionLevel = 'L'
+		var qr = qrcode(typeNumber, errorCorrectionLevel)
+		qr.addData(JSON.stringify(companyData), 'Byte')
+		qr.make()
+		var dataUrl = qr.createDataURL(5, 10)
+		document.getElementById('QRCode').innerHTML = '<img class="img-fluid" src="' + dataUrl + '">'
+		if (cb) {
+			cb(dataUrl)
+		}
+	}
+</script>
+</body>
+</html>

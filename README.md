@@ -1,0 +1,1 @@
+## Genera Qr Code Anagrafico - Agenzia delle Entrate
